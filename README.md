@@ -1,4 +1,4 @@
 # vCluster-IRSA-Snapshot-Use-Case Lab
 
 
-See  for the complete write-up.
+See  [here](https://github.com/jshori/vCluster-IRSA-Snapshot-Use-Case/blob/main/vCluster-IRSA-wildcard-lab.md) for the complete write-up.
