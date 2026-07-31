@@ -16,52 +16,18 @@
 
 ## 1. The Problem We're Solving
 
-Imagine a company runs many small, isolated "mini clusters" inside one big Kubernetes cluster (we'll explain what that means shortly). Each of these mini clusters needs to regularly back up its data to Amazon S3 (cloud file storage).
+Imagine a company runs many small, isolated "vCluster" inside one big Kubernetes cluster. Each of these vClusters needs to regularly back up its data to Amazon S3 (cloud file storage).
 
-To let a mini cluster talk to S3, AWS requires it to prove its identity first, like showing an ID card before entering a building. The normal way to set this up is:
+To let a vCluster talk to S3, AWS requires it to prove its identity first, like showing an ID card before entering a building. The normal way to set this up is:
 
 1. Create an AWS permission (called an IAM role).
-2. Explicitly link that one mini cluster to that one role.
+2. Explicitly link that one vCluster to that one role.
 
-The question this lab answers is: **if a company creates 50 of these mini clusters, do they need to repeat step 2 fifty times, once per mini cluster, or can they set things up once and have it apply automatically to every new mini cluster, forever?**
+The question this lab answers is: **if a company creates 50 of these vClusters, do they need to repeat step 2 fifty times, once per vCluster, or can they set things up once and have it apply automatically to every new vCluster, forever?**
 
-We tested this for real, in a real AWS account, and got a clear, tested answer. This guide walks through exactly how.
+I tested this for real, in a real AWS account, and got a clear, tested answer. This guide walks through exactly how.
 
----
-
-## 2. Glossary — Every Term Explained Simply
-
-Read this section once before continuing. Every term here will come up later.
-
-| Term | What it actually means |
-|---|---|
-| **Kubernetes** | A system that runs and manages many small programs (called "containers") across a group of computers, automatically restarting them if they crash, and giving each one an address to be reached at. |
-| **Cluster** | One "instance" of Kubernetes, a group of computers working together, managed as a single unit. |
-| **Pod** | The smallest unit Kubernetes runs. Think of it as one running copy of a program, wrapped in a small box with its own network address. |
-| **EKS (Elastic Kubernetes Service)** | Amazon's managed version of Kubernetes. Instead of setting up Kubernetes yourself, AWS runs the tricky parts for you. |
-| **Node** | One computer (usually a virtual machine) that is part of the cluster and actually runs the Pods. |
-| **vCluster** | A tool that lets you create a "mini cluster" inside a real cluster. From the outside it looks and behaves like a full, separate Kubernetes cluster, but underneath it's sharing the same physical computers as other mini clusters, like renting a fully furnished apartment inside a larger building, instead of building your own house. This is much cheaper and faster than giving every team a brand-new real cluster. |
-| **Tenant cluster** | The name we use for one of these "mini clusters" created by vCluster. Each team or workload can get its own tenant cluster. |
-| **vCluster Platform** | A web dashboard and management layer that sits on top of vCluster, letting you create, view, and configure tenant clusters through a UI instead of only the command line. |
-| **etcd** | The internal database that Kubernetes (and vCluster) uses to store everything about the cluster: what's running, its settings, its state. A "snapshot" of etcd is essentially a full backup of the cluster. |
-| **Snapshot** | A saved copy of the cluster's data at one point in time, so it can be restored later if something goes wrong. |
-| **S3 (Simple Storage Service)** | Amazon's cloud file storage service. You can think of it as a giant, reliable hard drive in the cloud, organized into "buckets" (like top-level folders). |
-| **Bucket** | A named storage container in S3. All files you upload go inside a bucket. |
-| **IAM (Identity and Access Management)** | AWS's system for controlling who (or what) is allowed to do what. It's the security guard of the AWS account. |
-| **IAM Role** | A defined set of permissions in AWS (e.g. "can read and write to this one S3 bucket") that something can "become" temporarily, without needing a permanent username/password. |
-| **IAM Policy** | The actual list of permissions attached to a role. It answers "once you have this role, what exactly are you allowed to do?" |
-| **Trust Policy** | A separate part of a role that answers a different question: "who is allowed to use this role in the first place?" A role can have great permissions, but if nobody is trusted to use it, it's useless. This document is the guest list for the role. |
-| **Service Account** | An identity inside Kubernetes that a Pod uses to say "this is who I am" when talking to other systems. Every Pod runs under some service account. |
-| **OIDC (OpenID Connect)** | A standard way for one system to prove its identity to another using a signed digital token, instead of a password. Think of it like a temporary, verifiable ID badge. |
-| **OIDC Provider** | The issuer of these ID badges. In our case, the EKS cluster itself can issue tokens proving "this Pod really is running inside this specific cluster." |
-| **IRSA (IAM Roles for Service Accounts)** | A specific AWS feature that lets a Kubernetes service account use an IAM role, by presenting an OIDC token as proof of identity. This is the star of this lab. |
-| **EKS Pod Identity** | A newer, alternative AWS feature that does a similar job to IRSA (letting a Pod use an IAM role) but works differently under the hood. |
-| **Wildcard** | A symbol (usually `*`) that means "match anything here." Like a blank tile in Scrabble that can stand in for any letter. |
-| **Namespace** | A way of dividing up a Kubernetes cluster into separate, named sections, so different teams' resources don't collide or interfere with each other. |
-
----
-
-## 3. The Big Idea Before We Start
+## 2. The Big Idea Before We Start
 
 Here's the core idea we're testing, explained with a simple analogy before any technical steps.
 
@@ -79,7 +45,7 @@ We tested this pattern-based approach directly, using IRSA, and it worked. The r
 
 ---
 
-## 4. Prerequisites
+## 3. Prerequisites
 
 This lab assumes you already have the generic, standard pieces in place, since setting these up is well covered elsewhere and isn't specific to this trick:
 
@@ -89,7 +55,7 @@ This lab assumes you already have the generic, standard pieces in place, since s
 
 ---
 
-## 5. Step by Step
+## 4. Step by Step
 
 ### Step 1: Create the S3 Bucket and IAM Policy
 
