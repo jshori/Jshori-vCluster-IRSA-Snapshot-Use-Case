@@ -31,8 +31,6 @@ I tested this for real, in a real AWS account, and got a clear, tested answer. T
 
 ## 2. Prerequisites
 
-This lab assumes you already have the generic, standard pieces in place, since setting these up is well covered elsewhere and isn't specific to this trick:
-
 - A working **EKS cluster**, with at least one node group up and running (see AWS's own EKS getting-started guide if you need this first)
 - `aws`, `kubectl`, and `helm` installed locally, with `aws configure` already pointing at your account
 - **An Enterprise license for vCluster Platform.** Scheduled snapshots are an Enterprise feature, not a free one.
