@@ -125,6 +125,15 @@ Read that condition carefully, this is the whole trick:
 
 So instead of naming one tenant cluster, this trust policy says: trust any tenant cluster, in this project, no matter its name, as long as it follows the standard naming pattern vCluster always uses.
 
+**How do we know this pattern?** Create any tenant cluster first (even a plain one, with no special config), then check its namespace and service account directly:
+
+```bash
+kubectl get pods -A | grep <your-tenant-cluster-name>
+kubectl get pod <your-tenant-cluster-name>-0 -n <its-namespace> -o jsonpath='{.spec.serviceAccountName}'
+```
+
+You'll see the namespace is named `loft-<project-name>-v-<tenant-cluster-name>`, and the service account is named `vc-<tenant-cluster-name>`. This is what confirms the wildcard pattern used above, it isn't a guess, it's the actual, observable naming convention vCluster uses every time.
+
 If you have multiple projects, you don't need to list them one by one either. You can widen the wildcard to cover all projects at once:
 
 ```json
