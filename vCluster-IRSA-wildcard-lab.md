@@ -27,25 +27,9 @@ The question this lab answers is: **if a company creates 50 of these vClusters, 
 
 I tested this for real, in a real AWS account, and got a clear, tested answer. This guide walks through exactly how.
 
-## 2. The Big Idea Before We Start
-
-Here's the core idea we're testing, explained with a simple analogy before any technical steps.
-
-Imagine an office building with a security desk. Normally, to let a new employee into a specific floor, you'd have to walk up to security and say "please add this exact person to the allowed list for floor 5." If you hire 50 new employees, you'd do this 50 times.
-
-But what if, instead, you told security once: **"anyone wearing a badge that starts with `EMP-` is allowed on floor 5"?** Now, every time HR issues a new badge following that pattern, that person can walk onto floor 5 immediately, no extra trip to security required.
-
-That's exactly what we're testing with AWS IAM roles and vCluster:
-
-- The "floor 5 access list" is the **trust policy** on an IAM role.
-- The "exact person" approach is what a lot of teams do by default: one AWS-side approval per Kubernetes service account.
-- The "badge pattern" approach uses a **wildcard** in the trust policy, so any new tenant cluster whose identity matches a naming pattern is automatically allowed. No new AWS-side step, ever.
-
-We tested this pattern-based approach directly, using IRSA, and it worked. The rest of this guide shows exactly how.
-
 ---
 
-## 3. Prerequisites
+## 2. Prerequisites
 
 This lab assumes you already have the generic, standard pieces in place, since setting these up is well covered elsewhere and isn't specific to this trick:
 
@@ -55,7 +39,7 @@ This lab assumes you already have the generic, standard pieces in place, since s
 
 ---
 
-## 4. Step by Step
+## 3. Step by Step
 
 ### Step 1: Create the S3 Bucket and IAM Policy
 
