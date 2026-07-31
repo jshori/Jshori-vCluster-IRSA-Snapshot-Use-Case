@@ -1,4 +1,4 @@
-# Reusing One AWS IAM Role Across Multiple vClusters
+# How to Share a Single AWS IAM Role Across Unlimited vClusters, Using IRSA and a Wildcard Trust Policy
 
 *A hands-on lab that answers a real support question: "Can multiple tenant clusters share the same AWS permission, instead of creating a new one every time?"*
 
